@@ -449,6 +449,7 @@ const SellerDashboard = ({ setIsSeller }) => {
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const { playNotificationSound } = useNotificationSound();
+  const [newOrdersThisMonth, setNewOrdersThisMonth] = useState(0);
 
   // Add new effect to fetch admin products when dialog opens
   useEffect(() => {
@@ -975,8 +976,14 @@ const SellerDashboard = ({ setIsSeller }) => {
       const ordersSnapshot = await getDocs(ordersQuery);
       const ordersData = [];
       let unpickedCount = 0;
-      let totalSales = 0;  // Initialize total sales counter
+      let totalSales = 0;
       let pendingOrders = 0;
+      let newOrdersCount = 0;
+      
+      // Get current month and year
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
       
       ordersSnapshot.forEach((doc) => {
         const orderData = doc.data();
@@ -993,6 +1000,14 @@ const SellerDashboard = ({ setIsSeller }) => {
           pendingOrders++;
         }
         
+        // Check if order is from current month and is new/pending
+        const orderDate = orderData.createdAt?.toDate?.() || new Date(orderData.createdAt || 0);
+        if (orderDate.getMonth() === currentMonth && 
+            orderDate.getFullYear() === currentYear && 
+            orderData.status === "pending") {
+          newOrdersCount++;
+        }
+        
         // Count all order totals for completed or processing orders
         if (orderData.status === "completed" || orderData.status === "processing" || orderData.status === "picked") {
           if (orderData.total) {
@@ -1002,6 +1017,9 @@ const SellerDashboard = ({ setIsSeller }) => {
           }
         }
       });
+
+      // Update new orders count for this month
+      setNewOrdersThisMonth(newOrdersCount);
 
       // Update unpicked orders count
       setUnpickedOrdersCount(unpickedCount);
@@ -1697,7 +1715,7 @@ const SellerDashboard = ({ setIsSeller }) => {
                         New Order
                       </Typography>
                       <Typography variant="h5" color="primary">
-                        2
+                        {newOrdersThisMonth}
                       </Typography>
                     </Box>
                   </Box>
@@ -1720,7 +1738,7 @@ const SellerDashboard = ({ setIsSeller }) => {
                     </Avatar>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        On delivery
+                        On the way
                       </Typography>
                       <Typography variant="h5" color="primary">
                         0
@@ -1733,7 +1751,7 @@ const SellerDashboard = ({ setIsSeller }) => {
                     </Avatar>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Delivered
+                        Completed
                       </Typography>
                       <Typography variant="h5" color="primary">
                         0

@@ -451,6 +451,7 @@ const SellerDashboard = ({ setIsSeller }) => {
   const { playNotificationSound } = useNotificationSound();
   const [newOrdersThisMonth, setNewOrdersThisMonth] = useState(0);
   const [cancelledOrdersThisMonth, setCancelledOrdersThisMonth] = useState(0);
+  const [onTheWayOrdersThisMonth, setOnTheWayOrdersThisMonth] = useState(0);
 
   // Add new effect to fetch admin products when dialog opens
   useEffect(() => {
@@ -981,6 +982,7 @@ const SellerDashboard = ({ setIsSeller }) => {
       let pendingOrders = 0;
       let newOrdersCount = 0;
       let cancelledOrdersCount = 0;
+      let onTheWayOrdersCount = 0;
       
       // Get current month and year
       const now = new Date();
@@ -1016,6 +1018,11 @@ const SellerDashboard = ({ setIsSeller }) => {
         if (isCurrentMonth && orderData.status === "cancelled") {
           cancelledOrdersCount++;
         }
+
+        // Check if order is from current month and is on the way
+        if (isCurrentMonth && orderData.status === "on-the-way") {
+          onTheWayOrdersCount++;
+        }
         
         // Count all order totals for completed or processing orders
         if (orderData.status === "completed" || orderData.status === "processing" || orderData.status === "picked") {
@@ -1031,6 +1038,8 @@ const SellerDashboard = ({ setIsSeller }) => {
       setNewOrdersThisMonth(newOrdersCount);
       // Update cancelled orders count for this month
       setCancelledOrdersThisMonth(cancelledOrdersCount);
+      // Update on the way orders count for this month
+      setOnTheWayOrdersThisMonth(onTheWayOrdersCount);
 
       // Update unpicked orders count
       setUnpickedOrdersCount(unpickedCount);
@@ -1752,7 +1761,7 @@ const SellerDashboard = ({ setIsSeller }) => {
                         On the way
                       </Typography>
                       <Typography variant="h5" color="primary">
-                        0
+                        {onTheWayOrdersThisMonth}
                       </Typography>
                     </Box>
                   </Box>

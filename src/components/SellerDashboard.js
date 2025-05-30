@@ -450,6 +450,7 @@ const SellerDashboard = ({ setIsSeller }) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const { playNotificationSound } = useNotificationSound();
   const [newOrdersThisMonth, setNewOrdersThisMonth] = useState(0);
+  const [cancelledOrdersThisMonth, setCancelledOrdersThisMonth] = useState(0);
 
   // Add new effect to fetch admin products when dialog opens
   useEffect(() => {
@@ -979,6 +980,7 @@ const SellerDashboard = ({ setIsSeller }) => {
       let totalSales = 0;
       let pendingOrders = 0;
       let newOrdersCount = 0;
+      let cancelledOrdersCount = 0;
       
       // Get current month and year
       const now = new Date();
@@ -1000,12 +1002,19 @@ const SellerDashboard = ({ setIsSeller }) => {
           pendingOrders++;
         }
         
-        // Check if order is from current month and is new/pending
+        // Get order date
         const orderDate = orderData.createdAt?.toDate?.() || new Date(orderData.createdAt || 0);
-        if (orderDate.getMonth() === currentMonth && 
-            orderDate.getFullYear() === currentYear && 
-            orderData.status === "pending") {
+        const isCurrentMonth = orderDate.getMonth() === currentMonth && 
+                             orderDate.getFullYear() === currentYear;
+        
+        // Check if order is from current month and is new/pending
+        if (isCurrentMonth && orderData.status === "pending") {
           newOrdersCount++;
+        }
+        
+        // Check if order is from current month and is cancelled
+        if (isCurrentMonth && orderData.status === "cancelled") {
+          cancelledOrdersCount++;
         }
         
         // Count all order totals for completed or processing orders
@@ -1020,6 +1029,8 @@ const SellerDashboard = ({ setIsSeller }) => {
 
       // Update new orders count for this month
       setNewOrdersThisMonth(newOrdersCount);
+      // Update cancelled orders count for this month
+      setCancelledOrdersThisMonth(cancelledOrdersCount);
 
       // Update unpicked orders count
       setUnpickedOrdersCount(unpickedCount);
@@ -1728,7 +1739,7 @@ const SellerDashboard = ({ setIsSeller }) => {
                         Cancelled
                       </Typography>
                       <Typography variant="h5" color="primary">
-                        0
+                        {cancelledOrdersThisMonth}
                       </Typography>
                     </Box>
                   </Box>
